@@ -17,23 +17,40 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
   'http://127.0.0.1:5173',
-  'https://product-management-frontend-aniket.netlify.app'
+  'https://product-management-frontend-aniket.netlify.app',
+  'https://product-management-frontend-aniket.netlify.app/'
 ];
-git 
+
+// More permissive CORS for development/debugging
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // For debugging, log all origins
+    console.log('Request origin:', origin);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS policy: No access from ${origin}`));
+      console.log('CORS blocked origin:', origin);
+      // For now, allow all origins to debug the issue
+      callback(null, true);
     }
   },
   credentials: true,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 };
 
+// Apply CORS middleware
+app.use(cors(corsOptions));
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
 // Middleware
-app.use(cors(corsOptions))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
@@ -86,6 +103,15 @@ app.use('/api/auth', authRoutes)
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Server Error:', err.stack)
+  
+  // Handle CORS errors specifically
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      message: 'CORS policy violation',
+      error: 'Origin not allowed'
+    });
+  }
+  
   res.status(500).json({ 
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : 'Internal server error'
@@ -118,7 +144,7 @@ const startServer = async () => {
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
       console.log(`Auth endpoints: /api/auth/register, /api/auth/login`)
       console.log(`API Documentation: http://localhost:${PORT}/api-docs`)
-      console.log(`CORS enabled for: http://localhost:5173`)
+      console.log(`CORS enabled for: ${allowedOrigins.join(', ')}`)
     })
     
   } catch (error) {

@@ -30,7 +30,10 @@ const Login = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        mode: 'cors',
+        credentials: 'include',
         body: JSON.stringify({
           email: values.email,
           password: values.password

@@ -40,7 +40,10 @@ const Register = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        mode: 'cors',
+        credentials: 'include',
         body: JSON.stringify({
           name: values.name,
           email: values.email,
@@ -56,14 +59,6 @@ const Register = () => {
 
       setSuccess('Registration successful! Please login.')
       resetForm()
-      
-      // Dispatch custom event to notify Navbar (in case user auto-logs in)
-      window.dispatchEvent(new Event('authChange'))
-      
-      // Redirect to login after 2 seconds
-      setTimeout(() => {
-        navigate('/login')
-      }, 2000)
 
     } catch (error) {
       setError(error.message)
@@ -97,7 +92,7 @@ const Register = () => {
               {success}
             </Alert>
           )}
-          
+
           {error && (
             <Alert variant="danger" dismissible onClose={() => setError(null)}>
               {error}
@@ -194,8 +189,8 @@ const Register = () => {
                 <div className="text-center mt-3">
                   <p className="mb-0">
                     Already have an account?{' '}
-                    <Button 
-                      variant="link" 
+                    <Button
+                      variant="link"
                       className="p-0"
                       onClick={() => navigate('/login')}
                     >

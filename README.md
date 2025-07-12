@@ -7,7 +7,7 @@ A full-stack product management application with React frontend and Node.js/Expr
 - **Backend**: https://product-management-backend-29kc.onrender.com/
 - **API Documentation**: https://product-management-backend-29kc.onrender.com/api-docs
 
-## 🛠️ Setup Instructions
+## Setup Instructions
 
 ### Frontend Setup
 
@@ -114,7 +114,7 @@ The app includes user authentication with JWT tokens:
 - CORS middleware
 - Swagger UI for API docs
 
-## 🚀 Deployment
+## Deployment
 
 ### Frontend (Netlify)
 - Connected to GitHub repository
@@ -136,6 +136,6 @@ The app includes user authentication with JWT tokens:
 - Protected routes
 - Environment variable protection
 
-## 📝 License
+## License
 
 MIT License
