@@ -19,7 +19,7 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'https://product-management-frontend-aniket.netlify.app'
 ];
-
+git 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
