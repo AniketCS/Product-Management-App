@@ -12,36 +12,13 @@ const authRoutes = require('./routes/authRoutes')
 
 const app = express()
 
-// CORS Configuration
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-  'https://product-management-frontend-aniket.netlify.app',
-  'https://product-management-frontend-aniket.netlify.app/'
-];
-
-// More permissive CORS for development/debugging
+// CORS Configuration - Open for debugging
 const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // For debugging, log all origins
-    console.log('Request origin:', origin);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      console.log('CORS blocked origin:', origin);
-      // For now, allow all origins to debug the issue
-      callback(null, true);
-    }
-  },
+  origin: true, // Allow all origins
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin']
 };
 
 // Apply CORS middleware
