@@ -9,6 +9,9 @@ const Login = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // API Base URL
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`
+
   // Validation Schema
   const LoginSchema = Yup.object().shape({
     email: Yup.string()
@@ -23,7 +26,7 @@ const Login = () => {
       setLoading(true)
       setError(null)
 
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

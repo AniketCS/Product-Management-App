@@ -10,6 +10,9 @@ const Register = () => {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
+  // API Base URL
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`
+
   // Validation Schema
   const RegisterSchema = Yup.object().shape({
     name: Yup.string()
@@ -33,7 +36,7 @@ const Register = () => {
       setError(null)
       setSuccess(null)
 
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,7 +54,7 @@ const Register = () => {
         throw new Error(data.message || 'Registration failed')
       }
 
-      setSuccess('Registration successful! Redirecting to login...')
+      setSuccess('Registration successful! Please login.')
       resetForm()
       
       // Dispatch custom event to notify Navbar (in case user auto-logs in)
