@@ -13,11 +13,24 @@ const authRoutes = require('./routes/authRoutes')
 const app = express()
 
 // CORS Configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'https://product-management-frontend-aniket.netlify.app'
+];
+
 const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error(`CORS policy: No access from ${origin}`));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200
-}
+};
 
 // Middleware
 app.use(cors(corsOptions))
