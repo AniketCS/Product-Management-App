@@ -10,7 +10,7 @@ const Login = () => {
   const [error, setError] = useState(null)
 
   // API Base URL
-  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'https://product-management-backend-29kc.onrender.com'}/api`
 
   // Validation Schema
   const LoginSchema = Yup.object().shape({
@@ -30,10 +30,7 @@ const Login = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
-        mode: 'cors',
-        credentials: 'include',
         body: JSON.stringify({
           email: values.email,
           password: values.password

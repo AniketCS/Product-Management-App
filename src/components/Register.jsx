@@ -11,7 +11,7 @@ const Register = () => {
   const [success, setSuccess] = useState(null)
 
   // API Base URL
-  const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`
+  const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'https://product-management-backend-29kc.onrender.com'}/api`
 
   // Validation Schema
   const RegisterSchema = Yup.object().shape({
@@ -36,14 +36,15 @@ const Register = () => {
       setError(null)
       setSuccess(null)
 
+      // Debug: Log the API URL being used
+      console.log('API URL:', `${API_BASE_URL}/auth/register`)
+      console.log('Environment variable:', import.meta.env.VITE_API_URL)
+
       const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
-        mode: 'cors',
-        credentials: 'include',
         body: JSON.stringify({
           name: values.name,
           email: values.email,
@@ -61,6 +62,7 @@ const Register = () => {
       resetForm()
 
     } catch (error) {
+      console.error('Registration error:', error)
       setError(error.message)
     } finally {
       setLoading(false)

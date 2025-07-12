@@ -17,7 +17,7 @@ import {
 } from '../constants/productConstants'
 
 // API Base URL
-const API_BASE_URL = `${import.meta.env.VITE_API_URL}/api`
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'https://product-management-backend-29kc.onrender.com'}/api`
 
 
 // Axios instance with default config
