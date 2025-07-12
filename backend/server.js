@@ -1,6 +1,8 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpecs = require('./config/swagger')
 
 // Load environment variables FIRST
 require('dotenv').config()
@@ -22,6 +24,19 @@ app.use(cors(corsOptions))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Product Management API Documentation',
+  customfavIcon: '/favicon.ico',
+  swaggerOptions: {
+    docExpansion: 'list',
+    filter: true,
+    showRequestHeaders: true,
+    showCommonExtensions: true
+  }
+}))
+
 // MongoDB Connection Function
 const connectDB = async () => {
   try {
@@ -34,14 +49,11 @@ const connectDB = async () => {
     })
     
     console.log('MongoDB Connected Successfully!')
-    console.log(`Database: ${mongoose.connection.name}`)
-    console.log(`Connection URL: ${mongoURI}`)
+
     
   } catch (error) {
     console.error('MongoDB Connection Error:', error.message)
-    console.error('Make sure MongoDB is running on your system')
-    console.error('Check your MONGODB_URI in .env file')
-    process.exit(1) // Exit the process on connection failure
+
   }
 }
 
@@ -49,7 +61,8 @@ const connectDB = async () => {
 app.get('/', (req, res) => {
   res.json({ 
     message: 'API is running',
-    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected'
+    database: mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected',
+    documentation: '/api-docs'
   })
 })
 
@@ -91,6 +104,7 @@ const startServer = async () => {
       console.log(`API URL: http://localhost:${PORT}`)
       console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
       console.log(`Auth endpoints: /api/auth/register, /api/auth/login`)
+      console.log(`API Documentation: http://localhost:${PORT}/api-docs`)
       console.log(`CORS enabled for: http://localhost:5173`)
     })
     

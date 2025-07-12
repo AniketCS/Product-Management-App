@@ -44,6 +44,9 @@ const Login = () => {
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
 
+      // Dispatch custom event to notify Navbar
+      window.dispatchEvent(new Event('authChange'))
+
       // Redirect to products page
       navigate('/products')
 

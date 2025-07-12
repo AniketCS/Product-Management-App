@@ -1,23 +1,65 @@
 import { Navbar, Nav, Container, Button } from 'react-bootstrap'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 function NavigationBar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [user, setUser] = useState(null)
 
+  // Check for user data on component mount and when location changes
   useEffect(() => {
-    // Check if user is logged in
-    const userData = localStorage.getItem('user')
-    if (userData) {
-      setUser(JSON.parse(userData))
+    const checkUser = () => {
+      const userData = localStorage.getItem('user')
+      const token = localStorage.getItem('token')
+      
+      if (userData && token) {
+        try {
+          setUser(JSON.parse(userData))
+        } catch (error) {
+          console.error('Error parsing user data:', error)
+          localStorage.removeItem('user')
+          localStorage.removeItem('token')
+          setUser(null)
+        }
+      } else {
+        setUser(null)
+      }
     }
-  }, [])
+
+    // Check immediately
+    checkUser()
+
+    // Listen for storage changes (when login/logout happens in other tabs)
+    const handleStorageChange = (e) => {
+      if (e.key === 'user' || e.key === 'token') {
+        checkUser()
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+
+    // Custom event listener for login/logout
+    const handleAuthChange = () => {
+      checkUser()
+    }
+
+    window.addEventListener('authChange', handleAuthChange)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('authChange', handleAuthChange)
+    }
+  }, [location.pathname]) // Re-check when route changes
 
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     setUser(null)
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new Event('authChange'))
+    
     navigate('/')
   }
 

@@ -54,6 +54,9 @@ const Register = () => {
       setSuccess('Registration successful! Redirecting to login...')
       resetForm()
       
+      // Dispatch custom event to notify Navbar (in case user auto-logs in)
+      window.dispatchEvent(new Event('authChange'))
+      
       // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate('/login')
