@@ -39,10 +39,10 @@ const ProductForm = ({ product = null, onSuccess = null }) => {
   useEffect(() => {
     if (product) {
       setInitialValues({
-        title: product.name || '',
+        title: product.title || '',
         image: product.image || '',
         description: product.description || '',
-        price: product.price ? product.price.replace('$', '') : ''
+        price: product.price || ''
       })
     }
   }, [product])
@@ -60,15 +60,14 @@ const ProductForm = ({ product = null, onSuccess = null }) => {
   const handleSubmit = async (values, { setSubmitting, resetForm }) => {
     try {
       const productData = {
-        name: values.title,
+        title: values.title,
         image: values.image,
         description: values.description,
-        price: `$${parseFloat(values.price).toFixed(2)}`,
-        category: 'General' // Default category, can be enhanced later
+        price: parseFloat(values.price)
       }
 
       if (isEditing) {
-        await dispatch(updateProduct(product.id, productData))
+        await dispatch(updateProduct(product._id, productData))
       } else {
         await dispatch(createProduct(productData))
       }

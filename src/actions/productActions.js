@@ -1,3 +1,5 @@
+import axios from 'axios'
+import { toast } from 'react-toastify'
 import {
   CREATE_PRODUCT_REQUEST,
   CREATE_PRODUCT_SUCCESS,
@@ -13,6 +15,46 @@ import {
   DELETE_PRODUCT_FAILURE,
   CLEAR_PRODUCT_MESSAGES
 } from '../constants/productConstants'
+
+// API Base URL
+const API_BASE_URL = 'http://localhost:5000/api'
+
+// Axios instance with default config
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// Request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+// Response interceptor to handle errors
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Token expired or invalid
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      toast.error('Session expired. Please login again.')
+      window.location.href = '/login'
+    }
+    return Promise.reject(error)
+  }
+)
 
 // Action Creators
 export const createProductRequest = () => ({
@@ -80,19 +122,15 @@ export const createProduct = (productData) => async (dispatch) => {
   try {
     dispatch(createProductRequest())
     
-    // Simulate API call - replace with actual API endpoint
-    const newProduct = {
-      id: Date.now(), // Generate unique ID
-      ...productData,
-      createdAt: new Date().toISOString()
-    }
+    const response = await api.post('/products', productData)
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    dispatch(createProductSuccess(response.data.product))
+    toast.success('Product created successfully!')
     
-    dispatch(createProductSuccess(newProduct))
   } catch (error) {
-    dispatch(createProductFailure(error.message))
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to create product'
+    dispatch(createProductFailure(errorMessage))
+    toast.error(errorMessage)
   }
 }
 
@@ -100,20 +138,29 @@ export const fetchProducts = () => async (dispatch) => {
   try {
     dispatch(readProductsRequest())
     
-    // Simulate API call - replace with actual API endpoint
-    const products = [
-      { id: 1, name: 'Product 1', description: 'This is product 1 description', price: '$99.99', category: 'Electronics' },
-      { id: 2, name: 'Product 2', description: 'This is product 2 description', price: '$149.99', category: 'Clothing' },
-      { id: 3, name: 'Product 3', description: 'This is product 3 description', price: '$79.99', category: 'Home' },
-      { id: 4, name: 'Product 4', description: 'This is product 4 description', price: '$199.99', category: 'Electronics' }
-    ]
+    const response = await api.get('/products')
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    dispatch(readProductsSuccess(response.data.products))
     
-    dispatch(readProductsSuccess(products))
   } catch (error) {
-    dispatch(readProductsFailure(error.message))
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch products'
+    dispatch(readProductsFailure(errorMessage))
+    toast.error(errorMessage)
+  }
+}
+
+export const fetchMyProducts = () => async (dispatch) => {
+  try {
+    dispatch(readProductsRequest())
+    
+    const response = await api.get('/products/my')
+    
+    dispatch(readProductsSuccess(response.data.products))
+    
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to fetch your products'
+    dispatch(readProductsFailure(errorMessage))
+    toast.error(errorMessage)
   }
 }
 
@@ -121,19 +168,15 @@ export const updateProduct = (productId, updatedData) => async (dispatch) => {
   try {
     dispatch(updateProductRequest())
     
-    // Simulate API call - replace with actual API endpoint
-    const updatedProduct = {
-      id: productId,
-      ...updatedData,
-      updatedAt: new Date().toISOString()
-    }
+    const response = await api.put(`/products/${productId}`, updatedData)
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    dispatch(updateProductSuccess(response.data.product))
+    toast.success('Product updated successfully!')
     
-    dispatch(updateProductSuccess(updatedProduct))
   } catch (error) {
-    dispatch(updateProductFailure(error.message))
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to update product'
+    dispatch(updateProductFailure(errorMessage))
+    toast.error(errorMessage)
   }
 }
 
@@ -141,12 +184,26 @@ export const deleteProduct = (productId) => async (dispatch) => {
   try {
     dispatch(deleteProductRequest())
     
-    // Simulate API call - replace with actual API endpoint
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    await api.delete(`/products/${productId}`)
     
     dispatch(deleteProductSuccess(productId))
+    toast.success('Product deleted successfully!')
+    
   } catch (error) {
-    dispatch(deleteProductFailure(error.message))
+    const errorMessage = error.response?.data?.message || error.message || 'Failed to delete product'
+    dispatch(deleteProductFailure(errorMessage))
+    toast.error(errorMessage)
   }
+}
+
+// Helper function to check if user is authenticated
+export const isAuthenticated = () => {
+  const token = localStorage.getItem('token')
+  return !!token
+}
+
+// Helper function to get auth headers
+export const getAuthHeaders = () => {
+  const token = localStorage.getItem('token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
 } 

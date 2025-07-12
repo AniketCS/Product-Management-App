@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import { Card, Badge, Button, Spinner, Alert } from 'react-bootstrap'
-import { fetchProducts, deleteProduct, clearProductMessages } from '../actions/productActions'
+import { fetchProducts, fetchMyProducts, deleteProduct, clearProductMessages, isAuthenticated } from '../actions/productActions'
 import ProductForm from './ProductForm'
 
 function Products() {
@@ -9,6 +9,7 @@ function Products() {
   const { products, loading, error, success, deleteLoading } = useSelector(state => state.product)
   const [showForm, setShowForm] = useState(false)
   const [editingProduct, setEditingProduct] = useState(null)
+  const [showMyProducts, setShowMyProducts] = useState(false)
 
   useEffect(() => {
     dispatch(fetchProducts())
@@ -38,6 +39,26 @@ function Products() {
   const handleFormSuccess = () => {
     setShowForm(false)
     setEditingProduct(null)
+    // Refresh products after form submission
+    if (showMyProducts) {
+      dispatch(fetchMyProducts())
+    } else {
+      dispatch(fetchProducts())
+    }
+  }
+
+  const handleToggleMyProducts = () => {
+    if (!isAuthenticated()) {
+      alert('Please login to view your products')
+      return
+    }
+    
+    setShowMyProducts(!showMyProducts)
+    if (!showMyProducts) {
+      dispatch(fetchMyProducts())
+    } else {
+      dispatch(fetchProducts())
+    }
   }
 
   if (loading) {
@@ -54,13 +75,23 @@ function Products() {
   return (
     <div style={{ width: '100%' }}>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1>Our Products</h1>
-        <Button 
-          variant="primary" 
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? 'Hide Form' : 'Add New Product'}
-        </Button>
+        <h1>{showMyProducts ? 'My Products' : 'All Products'}</h1>
+        <div className="d-flex gap-2">
+          <Button 
+            variant={showMyProducts ? "outline-primary" : "primary"}
+            onClick={handleToggleMyProducts}
+          >
+            {showMyProducts ? 'Show All Products' : 'Show My Products'}
+          </Button>
+          {isAuthenticated() && (
+            <Button 
+              variant="primary" 
+              onClick={() => setShowForm(!showForm)}
+            >
+              {showForm ? 'Hide Form' : 'Add New Product'}
+            </Button>
+          )}
+        </div>
       </div>
       
       {/* Product Form */}
@@ -84,49 +115,63 @@ function Products() {
         </Alert>
       )}
 
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-        gap: '1rem',
-        width: '100%'
-      }}>
-        {products.map((product) => (
-          <Card key={product.id}>
-            <Card.Body>
-              <Card.Title>{product.name}</Card.Title>
-              <Card.Text>{product.description}</Card.Text>
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <Badge bg="primary">{product.category}</Badge>
-                <span className="fw-bold">{product.price}</span>
-              </div>
-              <div className="d-flex gap-2">
-                <Button 
-                  variant="outline-primary" 
-                  size="sm"
-                  onClick={() => handleEdit(product)}
-                >
-                  Edit
-                </Button>
-                <Button 
-                  variant="outline-danger" 
-                  size="sm"
-                  onClick={() => handleDelete(product.id)}
-                  disabled={deleteLoading}
-                >
-                  {deleteLoading ? (
-                    <>
-                      <Spinner animation="border" size="sm" className="me-1" />
-                      Deleting...
-                    </>
-                  ) : (
-                    'Delete'
-                  )}
-                </Button>
-              </div>
-            </Card.Body>
-          </Card>
-        ))}
-      </div>
+      {products.length === 0 ? (
+        <div className="text-center py-5">
+          <h3>No products found</h3>
+          <p className="text-muted">
+            {showMyProducts 
+              ? "You haven't created any products yet." 
+              : "No products available."
+            }
+          </p>
+        </div>
+      ) : (
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+          gap: '1rem',
+          width: '100%'
+        }}>
+          {products.map((product) => (
+            <Card key={product._id}>
+              <Card.Body>
+                <Card.Title>{product.title}</Card.Title>
+                <Card.Text>{product.description}</Card.Text>
+                <div className="d-flex justify-content-between align-items-center mb-2">
+                  <Badge bg="primary">{product.category || 'General'}</Badge>
+                  <span className="fw-bold">${product.price}</span>
+                </div>
+                {isAuthenticated() && (
+                  <div className="d-flex gap-2">
+                    <Button 
+                      variant="outline-primary" 
+                      size="sm"
+                      onClick={() => handleEdit(product)}
+                    >
+                      Edit
+                    </Button>
+                    <Button 
+                      variant="outline-danger" 
+                      size="sm"
+                      onClick={() => handleDelete(product._id)}
+                      disabled={deleteLoading}
+                    >
+                      {deleteLoading ? (
+                        <>
+                          <Spinner animation="border" size="sm" className="me-1" />
+                          Deleting...
+                        </>
+                      ) : (
+                        'Delete'
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
