@@ -19,8 +19,8 @@ function Contact() {
             </Card.Text>
             <div className="mt-3">
               <p><strong>Email:</strong> info@productmanagement.com</p>
-              <p><strong>Phone:</strong> +1 (555) 123-4567</p>
-              <p><strong>Address:</strong> 123 Product Street, Management City, MC 12345</p>
+              <p><strong>Phone:</strong> +1 (999) 999-9999</p>
+              <p><strong>Address:</strong> 123 Abracadabra, Magic City, MC 12345</p>
             </div>
           </Card.Body>
         </Card>
