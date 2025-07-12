@@ -12,9 +12,26 @@ const authRoutes = require('./routes/authRoutes')
 
 const app = express()
 
-// CORS Configuration - Open for debugging
+// CORS Configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'https://product-management-frontend-aniket.netlify.app'
+];
+
 const corsOptions = {
-  origin: true, // Allow all origins
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -73,7 +90,16 @@ app.get('/', (req, res) => {
   })
 })
 
-// Routes
+// Health check endpoint for auth routes
+app.get('/api/auth/health', (req, res) => {
+  res.json({ 
+    message: 'Auth routes are working',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development'
+  })
+})
+
+// Routes - IMPORTANT: These must come BEFORE the 404 handler
 app.use('/api/products', productRoutes)
 app.use('/api/auth', authRoutes)
 
@@ -95,9 +121,14 @@ app.use((err, req, res, next) => {
   })
 })
 
-// 404 handler
+// 404 handler - MUST be last
 app.use('*', (req, res) => {
-  res.status(404).json({ message: 'Route not found' })
+  console.log('404 - Route not found:', req.method, req.originalUrl)
+  res.status(404).json({ 
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method
+  })
 })
 
 // Start server function

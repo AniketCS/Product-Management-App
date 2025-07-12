@@ -18,6 +18,10 @@ const options = {
     },
     servers: [
       {
+        url: 'https://product-management-backend-29kc.onrender.com',
+        description: 'Production server'
+      },
+      {
         url: 'http://localhost:5000',
         description: 'Development server'
       }

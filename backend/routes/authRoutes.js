@@ -120,12 +120,16 @@ const generateToken = (userId) => {
  *         description: Server error
  */
 router.post('/register', registerValidation, handleValidationErrors, async (req, res) => {
+  console.log('POST /api/auth/register - Request received')
+  console.log('Request body:', req.body)
+  
   try {
     const { name, email, password } = req.body
 
     // Check if user already exists
     const existingUser = await User.findOne({ email })
     if (existingUser) {
+      console.log('Registration failed - User already exists:', email)
       return res.status(400).json({
         message: 'User with this email already exists'
       })
@@ -139,6 +143,7 @@ router.post('/register', registerValidation, handleValidationErrors, async (req,
     })
 
     await user.save()
+    console.log('User registered successfully:', email)
 
     // Generate token
     const token = generateToken(user._id)
@@ -221,6 +226,9 @@ router.post('/register', registerValidation, handleValidationErrors, async (req,
  *         description: Server error
  */
 router.post('/login', loginValidation, handleValidationErrors, async (req, res) => {
+  console.log('POST /api/auth/login - Request received')
+  console.log('Request body:', req.body)
+  
   try {
     const { email, password } = req.body
 
@@ -228,6 +236,7 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
     const user = await User.findOne({ email }).select('+password')
     
     if (!user) {
+      console.log('Login failed - User not found:', email)
       return res.status(401).json({
         message: 'Invalid email or password'
       })
@@ -237,6 +246,7 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
     const isPasswordValid = await user.comparePassword(password)
     
     if (!isPasswordValid) {
+      console.log('Login failed - Invalid password for user:', email)
       return res.status(401).json({
         message: 'Invalid email or password'
       })
@@ -244,6 +254,7 @@ router.post('/login', loginValidation, handleValidationErrors, async (req, res) 
 
     // Generate token
     const token = generateToken(user._id)
+    console.log('User logged in successfully:', email)
 
     res.status(200).json({
       message: 'Login successful',
