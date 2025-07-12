@@ -4,6 +4,8 @@ import Navbar from './components/Navbar'
 import Home from './components/Home'
 import Products from './components/Products'
 import Contact from './components/Contact'
+import Register from './components/Register'
+import Login from './components/Login'
 
 function App() {
   return (
@@ -16,6 +18,8 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/login" element={<Login />} />
             </Routes>
           </div>
         </main>

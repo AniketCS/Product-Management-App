@@ -6,18 +6,26 @@ const cors = require('cors')
 require('dotenv').config()
 
 const productRoutes = require('./routes/productRoutes')
+const authRoutes = require('./routes/authRoutes')
 
 const app = express()
 
+// CORS Configuration
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173'],
+  credentials: true,
+  optionsSuccessStatus: 200
+}
+
 // Middleware
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 // MongoDB Connection Function
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGO_URI || 'mongodb://localhost:27017/product-management-app'
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/product-management-app'
     console.log('Attempting to connect to MongoDB...')
     
     await mongoose.connect(mongoURI, {
@@ -26,10 +34,11 @@ const connectDB = async () => {
     })
     
     console.log('MongoDB Connected Successfully!')
-
+    console.log(`Database: ${mongoose.connection.name}`)
+    console.log(`Connection URL: ${mongoURI}`)
     
   } catch (error) {
-    console.error(' MongoDB Connection Error:', error.message)
+    console.error('MongoDB Connection Error:', error.message)
     console.error('Make sure MongoDB is running on your system')
     console.error('Check your MONGODB_URI in .env file')
     process.exit(1) // Exit the process on connection failure
@@ -46,6 +55,7 @@ app.get('/', (req, res) => {
 
 // Routes
 app.use('/api/products', productRoutes)
+app.use('/api/auth', authRoutes)
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -64,6 +74,13 @@ app.use('*', (req, res) => {
 // Start server function
 const startServer = async () => {
   try {
+    // Check for required environment variables
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT_SECRET is not set in environment variables')
+      console.error('Add JWT_SECRET to your .env file')
+      process.exit(1)
+    }
+
     // Connect to MongoDB first
     await connectDB()
     
@@ -71,8 +88,10 @@ const startServer = async () => {
     const PORT = process.env.PORT || 5000
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`)
-      console.log(`🌐 API URL: http://localhost:${PORT}`)
-      console.log(` Environment: ${process.env.NODE_ENV || 'development'}`)
+      console.log(`API URL: http://localhost:${PORT}`)
+      console.log(`Environment: ${process.env.NODE_ENV || 'development'}`)
+      console.log(`Auth endpoints: /api/auth/register, /api/auth/login`)
+      console.log(`CORS enabled for: http://localhost:5173`)
     })
     
   } catch (error) {
@@ -83,7 +102,7 @@ const startServer = async () => {
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
-  console.error(' Unhandled Promise Rejection:', err.message)
+  console.error('Unhandled Promise Rejection:', err.message)
   process.exit(1)
 })
 
